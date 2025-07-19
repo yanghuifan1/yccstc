@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>停车场坐席</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        accent: '#722ED1',
+                        neutral: '#F5F7FA',
+                        'neutral-dark': '#4E5969',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 12px rgba(0, 0, 0, 0.08)',
+                        'card-hover': '0 8px 24px rgba(0, 0, 0, 0.12)',
+                    }
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.5s ease-in-out;
+            }
+            .animate-slide-up {
+                animation: slideUp 0.3s ease-out;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #165DFF 0%, #722ED1 100%);
+            }
+            .transition-all-300 {
+                transition: all 0.3s ease;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-inter text-gray-800 min-h-screen flex flex-col">
+    <!-- 顶部导航 -->
+    <header class="bg-gradient-primary text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <i class="fa fa-car text-3xl"></i>
+                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-shadow">停车场坐席</h1>
+                </div>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#" class="hover:text-secondary transition-all-300 flex items-center">
+                        <i class="fa fa-home mr-2"></i> 首页
+                    </a>
+                    <a href="#" class="hover:text-secondary transition-all-300 flex items-center">
+                        <i class="fa fa-cog mr-2"></i> 设置
+                    </a>
+                    <a href="#" class="hover:text-secondary transition-all-300 flex items-center">
+                        <i class="fa fa-question-circle mr-2"></i> 帮助
+                    </a>
+                </div>
+                <button class="md:hidden text-white text-xl">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- 状态卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="bg-white rounded-xl shadow-card p-6 transition-all-300 hover:shadow-card-hover animate-fade-in">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500">已保存</p>
+                            <h3 class="text-3xl font-bold mt-1" id="savedCount">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                            <i class="fa fa-bookmark text-primary text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-card p-6 transition-all-300 hover:shadow-card-hover animate-fade-in" style="animation-delay: 0.1s">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500">今日使用</p>
+                            <h3 class="text-3xl font-bold mt-1">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                            <i class="fa fa-chart-line text-success text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-card p-6 transition-all-300 hover:shadow-card-hover animate-fade-in" style="animation-delay: 0.2s">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500">最近更新</p>
+                            <h3 class="text-lg font-bold mt-1" id="lastUpdated">暂无数据</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                            <i class="fa fa-clock-o text-accent text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 表单卡片 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 animate-slide-up">
+                <h2 class="text-xl font-bold mb-6 flex items-center">
+                    <i class="fa fa-plus-circle text-primary mr-2"></i> 添加新停车场
+                </h2>
+                
+                <form id="redirectForm" class="space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label for="parkingName" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fa fa-building-o mr-1"></i> 停车场名称
+                            </label>
+                            <div class="relative">
+                                <input type="text" id="parkingName" placeholder="请输入停车场名称"
+                                    class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all-300">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                    <i class="fa fa-building"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="redirectUrl" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fa fa-link mr-1"></i> 跳转URL
+                            </label>
+                            <div class="relative">
+                                <input type="url" id="redirectUrl" placeholder="https://example.com"
+                                    class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all-300">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                    <i class="fa fa-link"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-3 justify-between">
+                        <button type="button" id="saveBtn" class="flex-1 md:flex-none px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all-300 flex items-center justify-center">
+                            <i class="fa fa-save mr-2"></i> 保存信息
+                        </button>
+                        <button type="button" id="clearAllBtn" class="flex-1 md:flex-none px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400/50 transition-all-300 flex items-center justify-center">
+                            <i class="fa fa-trash mr-2"></i> 清除所有
+                        </button>
+                        <button type="submit" class="flex-1 md:flex-none px-6 py-3 bg-success text-white rounded-lg hover:bg-success/90 focus:outline-none focus:ring-2 focus:ring-success/50 transition-all-300 flex items-center justify-center">
+                            <i class="fa fa-external-link mr-2"></i> 打开新窗口
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- 结果提示 -->
+                <div id="result" class="mt-4 px-4 py-2 rounded-lg opacity-0 transition-all-300"></div>
+            </div>
+            
+            <!-- 已保存列表 -->
+            <div class="bg-white rounded-xl shadow-card p-6 animate-slide-up" style="animation-delay: 0.1s">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold flex items-center">
+                        <i class="fa fa-list-ul text-primary mr-2"></i> 已保存的停车场
+                    </h2>
+                    <div class="flex items-center">
+                        <div class="relative mr-4">
+                            <input type="text" id="searchInput" placeholder="搜索停车场..."
+                                class="pl-8 pr-4 py-2 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm w-48 transition-all-300">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <i class="fa fa-search"></i>
+                            </div>
+                        </div>
+                        <select id="sortSelect" class="px-3 py-2 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm transition-all-300">
+                            <option value="nameAsc">按名称升序</option>
+                            <option value="nameDesc">按名称降序</option>
+                            <option value="timeNew">最新添加</option>
+                            <option value="timeOld">最早添加</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="urlList">
+                    <div class="text-center py-12 text-gray-500">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                            <i class="fa fa-folder-open-o text-2xl text-gray-400"></i>
+                        </div>
+                        <p>暂无保存的停车场信息</p>
+                        <p class="text-sm mt-2">添加新停车场后将显示在这里</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-bold mb-4">停车场坐席</h3>
+                    <p class="text-gray-400">快速管理和访问停车场相关URL的工具，提高工作效率。</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4">快速链接</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-all-300">首页</a></li>
+                        <li><a href="#" class="hover:text-white transition-all-300">使用指南</a></li>
+                        <li><a href="#" class="hover:text-white transition-all-300">常见问题</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4">联系我们</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li class="flex items-center"><i class="fa fa-envelope-o mr-2"></i> support@example.com</li>
+                        <li class="flex items-center"><i class="fa fa-phone mr-2"></i> 400-123-4567</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-500">
+                <p>© 2025 停车场坐席 | 保留所有权利</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 从localStorage加载已保存的URL
+        function loadSavedUrls() {
+            const savedUrls = JSON.parse(localStorage.getItem('parkingUrls')) || {};
+            const urlList = document.getElementById('urlList');
+            const savedCount = document.getElementById('savedCount');
+            
+            savedCount.textContent = Object.keys(savedUrls).length;
+            
+            if (Object.keys(savedUrls).length === 0) {
+                urlList.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                            <i class="fa fa-folder-open-o text-2xl text-gray-400"></i>
+                        </div>
+                        <p>暂无保存的停车场信息</p>
+                        <p class="text-sm mt-2">添加新停车场后将显示在这里</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 转换为数组并排序
+            let urlArray = Object.entries(savedUrls).map(([name, url]) => ({
+                name,
+                url,
+                timestamp: localStorage.getItem(`timestamp_${name}`) || Date.now()
+            }));
+            
+            // 根据选择的排序方式排序
+            const sortMethod = document.getElementById('sortSelect').value;
+            urlArray.sort((a, b) => {
+                switch (sortMethod) {
+                    case 'nameAsc': return a.name.localeCompare(b.name);
+                    case 'nameDesc': return b.name.localeCompare(a.name);
+                    case 'timeNew': return b.timestamp - a.timestamp;
+                    case 'timeOld': return a.timestamp - b.timestamp;
+                    default: return a.name.localeCompare(b.name);
+                }
+            });
+            
+            // 应用搜索过滤
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                urlArray = urlArray.filter(item => 
+                    item.name.toLowerCase().includes(searchTerm) || 
+                    item.url.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            if (urlArray.length === 0) {
+                urlList.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                            <i class="fa fa-search text-2xl text-gray-400"></i>
+                        </div>
+                        <p>没有找到匹配的停车场</p>
+                        <p class="text-sm mt-2">请尝试其他搜索关键词</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            urlList.innerHTML = '';
+            urlArray.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'border-b border-gray-100 last:border-0 pb-4 mb-4 last:mb-0 animate-fade-in';
+                itemElement.style.animationDelay = `${0.05 * (urlArray.indexOf(item))}s`;
+                
+                // 格式化时间
+                const date = new Date(parseInt(item.timestamp));
+                const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                
+                itemElement.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex-grow min-w-[200px]">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                                    <i class="fa fa-car text-primary"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-900 hover:text-primary cursor-pointer transition-all-300 truncate max-w-[250px]" data-url="${item.url}">
+                                        ${item.name}
+                                    </h4>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        <i class="fa fa-clock-o mr-1"></i> ${formattedDate}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="truncate max-w-[250px] text-sm text-gray-600">
+                                <i class="fa fa-link mr-1"></i>
+                                <span class="cursor-pointer hover:text-primary transition-all-300" title="${item.url}" data-url="${item.url}">
+                                    ${item.url.length > 40 ? item.url.substring(0, 40) + '...' : item.url}
+                                </span>
+                            </div>
+                            <button class="p-2 text-gray-500 hover:text-danger transition-all-300 delete-btn" data-name="${item.name}">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                urlList.appendChild(itemElement);
+            });
+            
+            // 添加点击事件
+            document.querySelectorAll('[data-url]').forEach(item => {
+                item.addEventListener('click', function() {
+                    const url = this.getAttribute('data-url');
+                    if (confirm(`您确定要在新窗口打开 ${url} 吗？`)) {
+                        window.open(url, '_blank');
+                    }
+                });
+            });
+            
+            // 添加删除事件
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const name = this.getAttribute('data-name');
+                    if (confirm(`确定要删除 ${name} 的信息吗？`)) {
+                        deleteSavedUrl(name);
+                    }
+                });
+            });
+            
+            // 更新最后更新时间
+            updateLastUpdated();
+        }
+        
+        // 保存URL到localStorage
+        function saveUrl(name, url) {
+            const savedUrls = JSON.parse(localStorage.getItem('parkingUrls')) || {};
+            
+            // 检查是否已存在同名记录
+            if (savedUrls[name] && !confirm(`"${name}" 已存在，是否覆盖？`)) {
+                return;
+            }
+            
+            savedUrls[name] = url;
+            localStorage.setItem('parkingUrls', JSON.stringify(savedUrls));
+            
+            // 保存时间戳
+            localStorage.setItem(`timestamp_${name}`, Date.now());
+            
+            showResult(`已成功保存 "${name}" 的信息`, 'success');
+            loadSavedUrls();
+            
+            // 自动清空表单
+            document.getElementById('parkingName').value = '';
+            document.getElementById('redirectUrl').value = '';
+            document.getElementById('parkingName').focus();
+        }
+        
+        // 删除保存的URL
+        function deleteSavedUrl(name) {
+            const savedUrls = JSON.parse(localStorage.getItem('parkingUrls')) || {};
+            if (savedUrls[name]) {
+                delete savedUrls[name];
+                localStorage.setItem('parkingUrls', JSON.stringify(savedUrls));
+                localStorage.removeItem(`timestamp_${name}`);
+                showResult(`已删除 "${name}" 的信息`, 'success');
+                loadSavedUrls();
+            }
+        }
+        
+        // 清除所有保存的URL
+        function clearAllSavedUrls() {
+            if (confirm('确定要清除所有保存的停车场信息吗？此操作不可恢复！')) {
+                localStorage.removeItem('parkingUrls');
+                // 清除所有时间戳
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('timestamp_')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                showResult('已清除所有保存的信息', 'success');
+                loadSavedUrls();
+            }
+        }
+        
+        // 显示结果消息
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = message;
+            
+            // 设置样式
+            if (type === 'success') {
+                resultDiv.classList.add('bg-green-50', 'border-l-4', 'border-success', 'text-success');
+            } else if (type === 'error') {
+                resultDiv.classList.add('bg-red-50', 'border-l-4', 'border-danger', 'text-danger');
+            }
+            
+            // 显示动画
+            resultDiv.classList.remove('opacity-0');
+            resultDiv.classList.add('opacity-100');
+            
+            // 3秒后隐藏
+            setTimeout(() => {
+                resultDiv.classList.remove('opacity-100');
+                resultDiv.classList.add('opacity-0');
+                
+                // 移除样式
+                if (type === 'success') {
+                    resultDiv.classList.remove('bg-green-50', 'border-l-4', 'border-success', 'text-success');
+                } else if (type === 'error') {
+                    resultDiv.classList.remove('bg-red-50', 'border-l-4', 'border-danger', 'text-danger');
+                }
+            }, 3000);
+        }
+        
+        // 更新最后更新时间
+        function updateLastUpdated() {
+            const savedUrls = JSON.parse(localStorage.getItem('parkingUrls')) || {};
+            const lastUpdated = document.getElementById('lastUpdated');
+            
+            if (Object.keys(savedUrls).length === 0) {
+                lastUpdated.textContent = '暂无数据';
+                return;
+            }
+            
+            // 找到最近更新的时间
+            let latestTimestamp = 0;
+            Object.keys(savedUrls).forEach(name => {
+                const timestamp = localStorage.getItem(`timestamp_${name}`);
+                if (timestamp && timestamp > latestTimestamp) {
+                    latestTimestamp = timestamp;
+                }
+            });
+            
+            if (latestTimestamp) {
+                const date = new Date(parseInt(latestTimestamp));
+                lastUpdated.textContent = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+            }
+        }
+        
+        // 页面加载时加载已保存的URL
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSavedUrls();
+            
+            // 表单提交事件
+            document.getElementById('redirectForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const parkingName = document.getElementById('parkingName').value.trim();
+                const redirectUrl = document.getElementById('redirectUrl').value.trim();
+                
+                // 验证输入
+                if (!parkingName || !redirectUrl) {
+                    showResult('请填写完整的停车场名称和URL', 'error');
+                    return;
+                }
+                
+                // 验证URL格式
+                try {
+                    new URL(redirectUrl);
+                } catch (error) {
+                    showResult('请输入有效的URL（必须包含https://或http://）', 'error');
+                    return;
+                }
+                
+                // 确认跳转
+                if (confirm(`您确定要在新窗口打开 ${redirectUrl} 吗？\n\n停车场名称: ${parkingName}`)) {
+                    window.open(redirectUrl, '_blank');
+                }
+            });
+            
+            // 保存按钮事件
+            document.getElementById('saveBtn').addEventListener('click', function() {
+                const parkingName = document.getElementById('parkingName').value.trim();
+                const redirectUrl = document.getElementById('redirectUrl').value.trim();
+                
+                // 验证输入
+                if (!parkingName || !redirectUrl) {
+                    showResult('请填写完整的停车场名称和URL', 'error');
+                    return;
+                }
+                
+                // 验证URL格式
+                try {
+                    new URL(redirectUrl);
+                } catch (error) {
+                    showResult('请输入有效的URL（必须包含https://或http://）', 'error');
+                    return;
+                }
+                
+                saveUrl(parkingName, redirectUrl);
+            });
+            
+            // 清除所有按钮事件
+            document.getElementById('clearAllBtn').addEventListener('click', clearAllSavedUrls);
+            
+            // 搜索输入事件
+            document.getElementById('searchInput').addEventListener('input', loadSavedUrls);
+            
+            // 排序选择事件
+            document.getElementById('sortSelect').addEventListener('change', loadSavedUrls);
+            
+            // 添加键盘快捷键
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+S 保存
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    document.getElementById('saveBtn').click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+    
